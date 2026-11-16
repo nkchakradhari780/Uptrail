@@ -1,0 +1,79 @@
+﻿
+# Build outputs
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rtifacts/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+*.sln.ide
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# .NET generated files
+project.lock.json
+project.fragment.lock.json
+artifacts/
+Generated\ Files/
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+# Publish output
+publish/
+wwwroot/dist/
+
+# Logs
+*.log
+logs/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+secrets.json
+appsettings.Development.json
+appsettings.Local.json
+
+# User-specific configuration
+appsettings.*.local.json
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# Certificates and private keys
+*.pfx
+*.p12
+*.key
+*.pem
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
