@@ -29,7 +29,6 @@
     <Folder Include="Controllers\" />
     <Folder Include="Helpers\Implementations\" />
     <Folder Include="Helpers\Interfaces\" />
-    <Folder Include="Models\Dtos\" />
     <Folder Include="Repositories\Implementations\" />
     <Folder Include="Repositories\Interfaces\" />
     <Folder Include="Services\Implementations\" />

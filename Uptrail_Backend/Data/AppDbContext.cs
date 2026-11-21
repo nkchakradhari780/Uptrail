@@ -55,14 +55,10 @@ namespace Uptrail_Backend.Data
                 entity.Property(r => r.UpdatedAt)
                     .HasPrecision(3);
 
-                entity.HasOne(c => c.PlatformAdmin)
-                    .WithMany(pa => pa.Companies)
-                    .HasForeignKey(c => c.PlatformAdminId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                entity.Property(c => c.CreatedBy);
+                entity.Property(c => c.UpdatedBy);
 
-                entity.HasIndex(c => c.PlatformAdminId)
-                    .HasDatabaseName("IX_Companies_PlatformAdminId");
-
+                
                 // Unique company email
                 entity.HasIndex(c => c.Email)
                     .IsUnique()
@@ -101,19 +97,32 @@ namespace Uptrail_Backend.Data
                 entity.Property(pa => pa.UpdatedAt)
                     .HasPrecision(3);
 
-                // A platform admin is assigned to a role.
-                entity.HasOne(pa => pa.Role)
-                    .WithMany()
-                    .HasForeignKey(pa => pa.RoleId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                entity.Property(pa => pa.PhoneNumber)
+                    .IsRequired()
+                    .HasMaxLength(20);
 
+                entity.Property(pa => pa.ProfileImageUrl)
+                    .HasMaxLength(2048);
+
+                entity.Property(pa => pa.IsEmailVerified)
+                    .IsRequired()
+                    .HasDefaultValue(false);
+
+                entity.Property(pa => pa.LastLoginAt)
+                    .HasPrecision(3);
+
+                entity.Property(pa => pa.CreatedBy);
+                entity.Property(pa => pa.UpdatedBy);
+
+                entity.HasMany(pa => pa.Companies)
+                    .WithMany()
+                    .UsingEntity("PlatformAdminCompanies");
+           
                 // Platform-admin email addresses are globally unique.
                 entity.HasIndex(pa => pa.Email)
                     .IsUnique()
                     .HasDatabaseName("IX_PlatformAdmins_Email");
 
-                entity.HasIndex(pa => pa.RoleId)
-                    .HasDatabaseName("IX_PlatformAdmins_RoleId");
             });
 
 
@@ -140,9 +149,12 @@ namespace Uptrail_Backend.Data
                     .IsRequired()
                     .HasDefaultValue(true);
 
-                entity.Property(r => r.IsPlatformAdmin)
+                entity.Property(r => r.IsAdmin)
                     .IsRequired()
                     .HasDefaultValue(false);
+
+                entity.Property(r => r.CreatedBy);
+                entity.Property(r => r.UpdatedBy);
                
                 // Role belongs to a Company
                 entity.HasOne(r => r.Company)
@@ -180,6 +192,17 @@ namespace Uptrail_Backend.Data
                     .IsRequired()
                     .HasMaxLength(500);
 
+                entity.Property(u => u.PhoneNumber)
+                    .IsRequired()
+                    .HasMaxLength(20);
+
+                entity.Property(u => u.ProfileImageUrl)
+                    .HasMaxLength(2048);
+
+                entity.Property(u => u.IsEmailVerified)
+                    .IsRequired()
+                    .HasDefaultValue(false);
+
                 entity.Property(u => u.IsActive)
                     .IsRequired()
                     .HasDefaultValue(true);
@@ -190,6 +213,9 @@ namespace Uptrail_Backend.Data
                    
                 entity.Property(u => u.UpdatedAt)
                     .HasPrecision(3);
+
+                entity.Property(u => u.CreatedBy);
+                entity.Property(u => u.UpdatedBy);
 
                 // User belongs to a Company
                 entity.HasOne(u => u.Company)
@@ -230,11 +256,7 @@ namespace Uptrail_Backend.Data
                 entity.Property(rt => rt.Revoked)
                     .IsRequired()
                     .HasDefaultValue(false);
-
-                entity.Property(rt => rt.IsActive)
-                    .IsRequired()
-                    .HasDefaultValue(true);
-
+                                
                 entity.Property(rt => rt.CreatedAt)
                     .IsRequired()
                     .HasPrecision(3);

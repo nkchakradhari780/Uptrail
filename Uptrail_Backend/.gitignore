@@ -23,6 +23,7 @@ x86/
 
 # VS Code
 .vscode/
+.vs/
 
 # .NET generated files
 project.lock.json

@@ -22,11 +22,37 @@ namespace Uptrail_Backend.Migrations
                     Address = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     Website = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: false)
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Companies", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PlatformAdmins",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
+                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
+                    PasswordHash = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    PhoneNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    ProfileImageUrl = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: false),
+                    IsEmailVerified = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
+                    LastLoginAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: false),
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlatformAdmins", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -36,8 +62,12 @@ namespace Uptrail_Backend.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     CompanyId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    IsAdmin = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: false)
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {
@@ -52,6 +82,30 @@ namespace Uptrail_Backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PlatformAdminCompanies",
+                columns: table => new
+                {
+                    CompaniesId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PlatformAdminId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PlatformAdminCompanies", x => new { x.CompaniesId, x.PlatformAdminId });
+                    table.ForeignKey(
+                        name: "FK_PlatformAdminCompanies_Companies_CompaniesId",
+                        column: x => x.CompaniesId,
+                        principalTable: "Companies",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_PlatformAdminCompanies_PlatformAdmins_PlatformAdminId",
+                        column: x => x.PlatformAdminId,
+                        principalTable: "PlatformAdmins",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -61,9 +115,14 @@ namespace Uptrail_Backend.Migrations
                     Name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: false),
                     PasswordHash = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
+                    PhoneNumber = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    ProfileImageUrl = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: false),
+                    IsEmailVerified = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: true)
+                    CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: true),
+                    UpdatedBy = table.Column<Guid>(type: "uuid", nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
                 {
@@ -88,16 +147,23 @@ namespace Uptrail_Backend.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    PlatformAdminId = table.Column<Guid>(type: "uuid", nullable: false),
                     TokenHash = table.Column<string>(type: "character varying(512)", maxLength: 512, nullable: false),
                     Revoked = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: false),
-                    RevokedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: false),
+                    RevokedAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: true),
                     ExpiresAt = table.Column<DateTime>(type: "timestamp(3) with time zone", precision: 3, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_RefreshTokens", x => x.Id);
                     table.CheckConstraint("CK_RefreshTokens_ExpiresAt", "\"ExpiresAt\" > \"CreatedAt\"");
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_PlatformAdmins_PlatformAdminId",
+                        column: x => x.PlatformAdminId,
+                        principalTable: "PlatformAdmins",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_RefreshTokens_Users_UserId",
                         column: x => x.UserId,
@@ -111,6 +177,22 @@ namespace Uptrail_Backend.Migrations
                 table: "Companies",
                 column: "Email",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlatformAdminCompanies_PlatformAdminId",
+                table: "PlatformAdminCompanies",
+                column: "PlatformAdminId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PlatformAdmins_Email",
+                table: "PlatformAdmins",
+                column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_PlatformAdminId_ExpiresAt",
+                table: "RefreshTokens",
+                columns: new[] { "PlatformAdminId", "ExpiresAt" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_RefreshTokens_TokenHash",
@@ -150,7 +232,13 @@ namespace Uptrail_Backend.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "PlatformAdminCompanies");
+
+            migrationBuilder.DropTable(
                 name: "RefreshTokens");
+
+            migrationBuilder.DropTable(
+                name: "PlatformAdmins");
 
             migrationBuilder.DropTable(
                 name: "Users");

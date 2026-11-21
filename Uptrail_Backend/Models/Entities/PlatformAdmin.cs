@@ -1,16 +1,14 @@
 ﻿namespace Uptrail_Backend.Models.Entities
 {
-    public class PlatformAdmin
+    public class PlatformAdmin: BaseEntity
     {
-        public Guid Id { get; set; }
-        public Guid RoleId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string PasswordHash { get; set; } = string.Empty;
-        public bool IsActive { get; set; } = true;
-        public Role Role { get; set; } = null!;
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
+        public string ProfileImageUrl { get; set; } = string.Empty;
+        public bool IsEmailVerified { get; set; } = false;
+        public DateTime? LastLoginAt { get; set; }
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
         public ICollection<Company> Companies { get; set; } = new List<Company>();
     }

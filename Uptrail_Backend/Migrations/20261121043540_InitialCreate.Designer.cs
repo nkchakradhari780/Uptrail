@@ -12,7 +12,7 @@ using Uptrail_Backend.Data;
 namespace Uptrail_Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261118022009_InitialCreate")]
+    [Migration("20261121043540_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -24,6 +24,21 @@ namespace Uptrail_Backend.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("PlatformAdminCompanies", b =>
+                {
+                    b.Property<Guid>("CompaniesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PlatformAdminId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("CompaniesId", "PlatformAdminId");
+
+                    b.HasIndex("PlatformAdminId");
+
+                    b.ToTable("PlatformAdminCompanies");
+                });
 
             modelBuilder.Entity("Uptrail_Backend.Models.Entities.Company", b =>
                 {
@@ -40,10 +55,18 @@ namespace Uptrail_Backend.Migrations
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -55,9 +78,12 @@ namespace Uptrail_Backend.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Website")
                         .HasMaxLength(2048)
@@ -70,6 +96,74 @@ namespace Uptrail_Backend.Migrations
                         .HasDatabaseName("IX_Companies_Email");
 
                     b.ToTable("Companies");
+                });
+
+            modelBuilder.Entity("Uptrail_Backend.Models.Entities.PlatformAdmin", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsEmailVerified")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("ProfileImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("IX_PlatformAdmins_Email");
+
+                    b.ToTable("PlatformAdmins");
                 });
 
             modelBuilder.Entity("Uptrail_Backend.Models.Entities.RefreshToken", b =>
@@ -86,12 +180,15 @@ namespace Uptrail_Backend.Migrations
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
 
+                    b.Property<Guid>("PlatformAdminId")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("Revoked")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<DateTime>("RevokedAt")
+                    b.Property<DateTime?>("RevokedAt")
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
 
@@ -108,6 +205,9 @@ namespace Uptrail_Backend.Migrations
                     b.HasIndex("TokenHash")
                         .IsUnique()
                         .HasDatabaseName("IX_RefreshTokens_TokenHash");
+
+                    b.HasIndex("PlatformAdminId", "ExpiresAt")
+                        .HasDatabaseName("IX_RefreshTokens_PlatformAdminId_ExpiresAt");
 
                     b.HasIndex("UserId", "ExpiresAt")
                         .HasDatabaseName("IX_RefreshTokens_UserId_ExpiresAt");
@@ -131,14 +231,30 @@ namespace Uptrail_Backend.Migrations
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
+
+                    b.Property<bool>("IsAdmin")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -162,6 +278,9 @@ namespace Uptrail_Backend.Migrations
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -171,6 +290,11 @@ namespace Uptrail_Backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
+
+                    b.Property<bool>("IsEmailVerified")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -182,12 +306,25 @@ namespace Uptrail_Backend.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("ProfileImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -203,8 +340,29 @@ namespace Uptrail_Backend.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("PlatformAdminCompanies", b =>
+                {
+                    b.HasOne("Uptrail_Backend.Models.Entities.Company", null)
+                        .WithMany()
+                        .HasForeignKey("CompaniesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Uptrail_Backend.Models.Entities.PlatformAdmin", null)
+                        .WithMany()
+                        .HasForeignKey("PlatformAdminId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Uptrail_Backend.Models.Entities.RefreshToken", b =>
                 {
+                    b.HasOne("Uptrail_Backend.Models.Entities.PlatformAdmin", null)
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("PlatformAdminId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Uptrail_Backend.Models.Entities.User", null)
                         .WithMany("RefreshTokens")
                         .HasForeignKey("UserId")
@@ -248,6 +406,11 @@ namespace Uptrail_Backend.Migrations
                     b.Navigation("Roles");
 
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Uptrail_Backend.Models.Entities.PlatformAdmin", b =>
+                {
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("Uptrail_Backend.Models.Entities.User", b =>

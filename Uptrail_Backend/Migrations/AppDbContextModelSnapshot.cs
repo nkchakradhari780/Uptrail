@@ -22,6 +22,21 @@ namespace Uptrail_Backend.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("PlatformAdminCompanies", b =>
+                {
+                    b.Property<Guid>("CompaniesId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PlatformAdminId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("CompaniesId", "PlatformAdminId");
+
+                    b.HasIndex("PlatformAdminId");
+
+                    b.ToTable("PlatformAdminCompanies");
+                });
+
             modelBuilder.Entity("Uptrail_Backend.Models.Entities.Company", b =>
                 {
                     b.Property<Guid>("Id")
@@ -36,6 +51,9 @@ namespace Uptrail_Backend.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -57,12 +75,12 @@ namespace Uptrail_Backend.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.Property<Guid>("PlatformAdminId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Website")
                         .HasMaxLength(2048)
@@ -73,9 +91,6 @@ namespace Uptrail_Backend.Migrations
                     b.HasIndex("Email")
                         .IsUnique()
                         .HasDatabaseName("IX_Companies_Email");
-
-                    b.HasIndex("PlatformAdminId")
-                        .HasDatabaseName("IX_Companies_PlatformAdminId");
 
                     b.ToTable("Companies");
                 });
@@ -90,6 +105,9 @@ namespace Uptrail_Backend.Migrations
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -99,6 +117,15 @@ namespace Uptrail_Backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
+
+                    b.Property<bool>("IsEmailVerified")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasPrecision(3)
+                        .HasColumnType("timestamp(3) with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -110,21 +137,28 @@ namespace Uptrail_Backend.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
-                    b.Property<Guid>("RoleId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("ProfileImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
                         .IsUnique()
                         .HasDatabaseName("IX_PlatformAdmins_Email");
-
-                    b.HasIndex("RoleId")
-                        .HasDatabaseName("IX_PlatformAdmins_RoleId");
 
                     b.ToTable("PlatformAdmins");
                 });
@@ -142,11 +176,6 @@ namespace Uptrail_Backend.Migrations
                     b.Property<DateTime>("ExpiresAt")
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
-
-                    b.Property<bool>("IsActive")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
 
                     b.Property<Guid>("PlatformAdminId")
                         .HasColumnType("uuid");
@@ -199,12 +228,15 @@ namespace Uptrail_Backend.Migrations
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
 
-                    b.Property<bool>("IsPlatformAdmin")
+                    b.Property<bool>("IsAdmin")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
@@ -214,9 +246,12 @@ namespace Uptrail_Backend.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -240,6 +275,9 @@ namespace Uptrail_Backend.Migrations
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
 
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(256)
@@ -249,6 +287,11 @@ namespace Uptrail_Backend.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
+
+                    b.Property<bool>("IsEmailVerified")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -260,12 +303,25 @@ namespace Uptrail_Backend.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("ProfileImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasPrecision(3)
                         .HasColumnType("timestamp(3) with time zone");
+
+                    b.Property<Guid?>("UpdatedBy")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -281,26 +337,19 @@ namespace Uptrail_Backend.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Uptrail_Backend.Models.Entities.Company", b =>
+            modelBuilder.Entity("PlatformAdminCompanies", b =>
                 {
-                    b.HasOne("Uptrail_Backend.Models.Entities.PlatformAdmin", "PlatformAdmin")
-                        .WithMany("Companies")
-                        .HasForeignKey("PlatformAdminId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("PlatformAdmin");
-                });
-
-            modelBuilder.Entity("Uptrail_Backend.Models.Entities.PlatformAdmin", b =>
-                {
-                    b.HasOne("Uptrail_Backend.Models.Entities.Role", "Role")
+                    b.HasOne("Uptrail_Backend.Models.Entities.Company", null)
                         .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasForeignKey("CompaniesId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Role");
+                    b.HasOne("Uptrail_Backend.Models.Entities.PlatformAdmin", null)
+                        .WithMany()
+                        .HasForeignKey("PlatformAdminId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Uptrail_Backend.Models.Entities.RefreshToken", b =>
@@ -358,8 +407,6 @@ namespace Uptrail_Backend.Migrations
 
             modelBuilder.Entity("Uptrail_Backend.Models.Entities.PlatformAdmin", b =>
                 {
-                    b.Navigation("Companies");
-
                     b.Navigation("RefreshTokens");
                 });
 
