@@ -1,6 +1,83 @@
 @Uptrail_Backend_HostAddress = http://localhost:5059
 
-GET {{Uptrail_Backend_HostAddress}}/weatherforecast/
+### ==========================================
+### PlatformAdmin Management Endpoints
+### ==========================================
+
+### 1. Create Platform Admin
+POST {{Uptrail_Backend_HostAddress}}/api/PlatformAdmin
+Content-Type: application/json
+
+{
+  "name": "Super Admin",
+  "email": "admin@uptrail.com",
+  "password": "Password@123",
+  "phoneNumber": "+1234567890",
+  "profileImageUrl": "https://example.com/avatar.jpg"
+}
+
+### 2. Get All Platform Admins
+GET {{Uptrail_Backend_HostAddress}}/api/PlatformAdmin
 Accept: application/json
 
-###
+### 2a. Search Platform Admins (by partial name, email, or phone)
+GET {{Uptrail_Backend_HostAddress}}/api/PlatformAdmin?searchTerm=admin
+Accept: application/json
+
+### 2b. Search Platform Admins using /search route
+GET {{Uptrail_Backend_HostAddress}}/api/PlatformAdmin/search?searchTerm=1234
+Accept: application/json
+
+### 3. Get Platform Admin By Id (Replace with actual GUID)
+@adminId = 00000000-0000-0000-0000-000000000000
+GET {{Uptrail_Backend_HostAddress}}/api/PlatformAdmin/{{adminId}}
+Accept: application/json
+
+### 4. Update Platform Admin By Id (Replace with actual GUID)
+PUT {{Uptrail_Backend_HostAddress}}/api/PlatformAdmin/{{adminId}}
+Content-Type: application/json
+
+{
+  "name": "Super Admin Updated",
+  "email": "admin@uptrail.com",
+  "phoneNumber": "+1987654321",
+  "profileImageUrl": "https://example.com/avatar-updated.jpg",
+  "isEmailVerified": true,
+  "isActive": true
+}
+
+### 5. Delete Platform Admin By Id (Replace with actual GUID)
+DELETE {{Uptrail_Backend_HostAddress}}/api/PlatformAdmin/{{adminId}}
+Accept: application/json
+
+
+### ==========================================
+### PlatformAdmin Auth Endpoints
+### ==========================================
+
+### 6. Platform Admin Login
+# @name login
+POST {{Uptrail_Backend_HostAddress}}/api/PlatformAdminAuth/login
+Content-Type: application/json
+
+{
+  "email": "admin@uptrail.com",
+  "password": "Password@123"
+}
+
+### 7. Refresh Token
+@refreshToken = your_refresh_token_here
+POST {{Uptrail_Backend_HostAddress}}/api/PlatformAdminAuth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 8. Logout
+POST {{Uptrail_Backend_HostAddress}}/api/PlatformAdminAuth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
