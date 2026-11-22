@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Uptrail_Backend.Exceptions;
 using Uptrail_Backend.Helpers.Interfaces;
 using Uptrail_Backend.Models.Dtos.PlatformAdminDtos;
 using Uptrail_Backend.Models.Entities;
@@ -30,6 +31,11 @@ namespace Uptrail_Backend.Services.Implementations
 
         public async Task<PlatformAdminTokenResponseDto> LoginAsync(PlatformAdminLoginDto request)
         {
+            if (request is null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+            {
+                throw new BadRequestException("Email and password are required.");
+            }
+
             var admin = await _repository.GetActiveByEmailAsync(request.Email);
 
             if (admin is null || !_passwordHasher.VerifyPassword(request.Password, admin.PasswordHash))
@@ -37,11 +43,17 @@ namespace Uptrail_Backend.Services.Implementations
                 throw new UnauthorizedAccessException("Invalid email or password.");
             }
 
+            await _repository.UpdateLastLoginAtAsync(admin.Id);
             return await IssueTokensAsync(ToResponse(admin));
         }
 
         public async Task<PlatformAdminTokenResponseDto> RefreshAsync(RefreshTokenRequestDto request)
         {
+            if (request is null || string.IsNullOrWhiteSpace(request.RefreshToken))
+            {
+                throw new BadRequestException("The refresh token is required.");
+            }
+
             Guid adminId;
             try
             {
@@ -73,6 +85,11 @@ namespace Uptrail_Backend.Services.Implementations
 
         public async Task LogoutAsync(RefreshTokenRequestDto request)
         {
+            if (request is null || string.IsNullOrWhiteSpace(request.RefreshToken))
+            {
+                throw new BadRequestException("The refresh token is required.");
+            }
+
             var storedToken = await _repository.GetRefreshTokenByHashAsync(HashToken(request.RefreshToken));
             if (storedToken is null || storedToken.Revoked)
             {
@@ -93,6 +110,7 @@ namespace Uptrail_Backend.Services.Implementations
             {
                 Id = Guid.NewGuid(),
                 PlatformAdminId = admin.Id,
+                UserId = null,
                 TokenHash = HashToken(refreshToken),
                 CreatedAt = now,
                 ExpiresAt = now.Add(refreshLifetime)
@@ -109,7 +127,11 @@ namespace Uptrail_Backend.Services.Implementations
 
         private int GetPositiveSetting(string key, int fallback)
         {
-            return int.TryParse(_configuration[$"Jwt:{key}"], out var value) && value > 0
+            var raw = _configuration[$"Jwt:{key}"]
+                ?? Environment.GetEnvironmentVariable($"Jwt__{key}")
+                ?? Environment.GetEnvironmentVariable($"JWT_{key.ToUpperInvariant()}");
+
+            return int.TryParse(raw, out var value) && value > 0
                 ? value
                 : fallback;
         }

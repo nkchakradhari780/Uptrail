@@ -29,14 +29,21 @@ namespace Uptrail_Backend.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(ApiResponse<List<PlatformAdminResponseDto>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetAll()
+        {
+            var admins = await _platformAdminService.GetAllPlatformAdminsAsync();
+            return Ok(ApiResponseFactory.SuccessResponse(admins, ResponseMessages.PlatformAdminsRetrieved));
+        }
+
         [HttpGet("search")]
         [ProducesResponseType(typeof(ApiResponse<List<PlatformAdminResponseDto>>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAll([FromQuery] string? searchTerm = null)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Search([FromQuery] string searchTerm)
         {
-            var admins = string.IsNullOrWhiteSpace(searchTerm)
-                ? await _platformAdminService.GetAllPlatformAdminsAsync()
-                : await _platformAdminService.SearchPlatformAdminsAsync(searchTerm);
-
+            var admins = await _platformAdminService.SearchPlatformAdminsAsync(searchTerm);
             return Ok(ApiResponseFactory.SuccessResponse(admins, ResponseMessages.PlatformAdminsRetrieved));
         }
 

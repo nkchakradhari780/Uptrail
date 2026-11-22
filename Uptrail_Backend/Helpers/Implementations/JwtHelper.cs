@@ -1,4 +1,4 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
@@ -115,7 +115,9 @@ namespace Uptrail_Backend.Helpers.Implementations
 
         private string GetRequiredSetting(string name)
         {
-            var value = _configuration[$"Jwt:{name}"];
+            var value = _configuration[$"Jwt:{name}"]
+                ?? Environment.GetEnvironmentVariable($"Jwt__{name}")
+                ?? Environment.GetEnvironmentVariable($"JWT_{name.ToUpperInvariant()}");
 
             if (string.IsNullOrWhiteSpace(value))
             {

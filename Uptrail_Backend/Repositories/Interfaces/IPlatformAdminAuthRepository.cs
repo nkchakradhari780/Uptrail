@@ -9,5 +9,6 @@ namespace Uptrail_Backend.Repositories.Interfaces
         Task<RefreshToken?> GetRefreshTokenByHashAsync(string tokenHash);
         Task AddRefreshTokenAsync(RefreshToken refreshToken);
         Task RevokeRefreshTokenAsync(RefreshToken refreshToken);
+        Task UpdateLastLoginAtAsync(Guid adminId);
     }
 }

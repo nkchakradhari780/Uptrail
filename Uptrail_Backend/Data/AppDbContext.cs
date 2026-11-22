@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Uptrail_Backend.Models.Entities;
 
 namespace Uptrail_Backend.Data
@@ -249,6 +249,12 @@ namespace Uptrail_Backend.Data
             {
                 entity.HasKey(rt => rt.Id);
 
+                entity.Property(rt => rt.UserId)
+                    .IsRequired(false);
+
+                entity.Property(rt => rt.PlatformAdminId)
+                    .IsRequired(false);
+
                 entity.Property(rt => rt.TokenHash)
                     .IsRequired()
                     .HasMaxLength(512);
@@ -268,16 +274,18 @@ namespace Uptrail_Backend.Data
                     .IsRequired()
                     .HasPrecision(3);
 
-                // RefreshToken belongs to a User.
+                // RefreshToken optionally belongs to a User.
                 entity.HasOne<User>()
                     .WithMany(u => u.RefreshTokens)
                     .HasForeignKey(rt => rt.UserId)
+                    .IsRequired(false)
                     .OnDelete(DeleteBehavior.Cascade);
 
-                // RefreshToken also belongs to a PlatformAdmin.
+                // RefreshToken optionally belongs to a PlatformAdmin.
                 entity.HasOne<PlatformAdmin>()
                     .WithMany(pa => pa.RefreshTokens)
                     .HasForeignKey(rt => rt.PlatformAdminId)
+                    .IsRequired(false)
                     .OnDelete(DeleteBehavior.Cascade);
 
                 // Token hash must be globally unique

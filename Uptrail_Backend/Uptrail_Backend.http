@@ -16,19 +16,19 @@ Content-Type: application/json
   "profileImageUrl": "https://example.com/avatar.jpg"
 }
 
-### 2. Get All Platform Admins
+### 2. Get All Platform Admins (Returns 404 if no admins exist)
 GET {{Uptrail_Backend_HostAddress}}/api/PlatformAdmin
 Accept: application/json
 
-### 2a. Search Platform Admins (by partial name, email, or phone)
-GET {{Uptrail_Backend_HostAddress}}/api/PlatformAdmin?searchTerm=admin
+### 3. Search Platform Admins by Name, Email, or Phone (Dedicated search endpoint)
+GET {{Uptrail_Backend_HostAddress}}/api/PlatformAdmin/search?searchTerm=nitinadmin@gmail.com
 Accept: application/json
 
-### 2b. Search Platform Admins using /search route
-GET {{Uptrail_Backend_HostAddress}}/api/PlatformAdmin/search?searchTerm=1234
+### 4. Search Platform Admins by Phone
+GET {{Uptrail_Backend_HostAddress}}/api/PlatformAdmin/search?searchTerm=7509
 Accept: application/json
 
-### 3. Get Platform Admin By Id (Replace with actual GUID)
+### 5. Get Platform Admin By Id (Replace with actual GUID)
 @adminId = 00000000-0000-0000-0000-000000000000
 GET {{Uptrail_Backend_HostAddress}}/api/PlatformAdmin/{{adminId}}
 Accept: application/json
@@ -55,14 +55,14 @@ Accept: application/json
 ### PlatformAdmin Auth Endpoints
 ### ==========================================
 
-### 6. Platform Admin Login
+### 7. Platform Admin Login
 # @name login
 POST {{Uptrail_Backend_HostAddress}}/api/PlatformAdminAuth/login
 Content-Type: application/json
 
 {
-  "email": "admin@uptrail.com",
-  "password": "Password@123"
+  "email": "nitinadmin@gmail.com",
+  "password": "abcdefg"
 }
 
 ### 7. Refresh Token

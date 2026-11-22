@@ -16,9 +16,15 @@ namespace Uptrail_Backend.Repositories.Implementations
 
         public Task<PlatformAdmin?> GetActiveByEmailAsync(string email)
         {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return Task.FromResult<PlatformAdmin?>(null);
+            }
+
+            var normalized = email.Trim().ToLower();
             return _context.PlatformAdmins
                 .AsNoTracking()
-                .FirstOrDefaultAsync(admin => admin.Email == email && admin.IsActive);
+                .FirstOrDefaultAsync(admin => admin.Email.ToLower() == normalized && admin.IsActive);
         }
 
         public Task<PlatformAdmin?> GetActiveByIdAsync(Guid id)
@@ -45,6 +51,16 @@ namespace Uptrail_Backend.Repositories.Implementations
             refreshToken.Revoked = true;
             refreshToken.RevokedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateLastLoginAtAsync(Guid adminId)
+        {
+            var admin = await _context.PlatformAdmins.FirstOrDefaultAsync(pa => pa.Id == adminId);
+            if (admin != null)
+            {
+                admin.LastLoginAt = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

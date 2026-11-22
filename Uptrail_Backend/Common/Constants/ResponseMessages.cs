@@ -1,4 +1,4 @@
-﻿namespace Uptrail_Backend.Common.Constants
+namespace Uptrail_Backend.Common.Constants
 {
     public class ResponseMessages
     {
@@ -11,5 +11,6 @@
         public const string PlatformAdminLoggedIn = "Platform admin logged in successfully";
         public const string TokenRefreshed = "Access token refreshed successfully";
         public const string PlatformAdminLoggedOut = "Platform admin logged out successfully";
+        public const string NoPlatformAdminExist = "No platform admin exist";
     }
 }
