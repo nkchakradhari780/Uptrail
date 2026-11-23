@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Uptrail_Backend.Common.Constants;
@@ -16,6 +17,13 @@ namespace Uptrail_Backend.Controllers
         public PlatformAdminController(IPlatformAdminService platformAdminService)
         {
             _platformAdminService = platformAdminService;
+        }
+
+        private Guid? GetCurrentUserId()
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                         ?? User.FindFirst("sub")?.Value;
+            return Guid.TryParse(userIdStr, out var id) ? id : null;
         }
 
         [HttpPost]
@@ -59,7 +67,16 @@ namespace Uptrail_Backend.Controllers
         [ProducesResponseType(typeof(ApiResponse<PlatformAdminResponseDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePlatformAdminDto request)
         {
-            var admin = await _platformAdminService.UpdatePlatformAdminByIdAsync(id, request);
+            if (request != null && request.UpdatedBy == Guid.Empty)
+            {
+                var currentUserId = GetCurrentUserId();
+                if (currentUserId.HasValue)
+                {
+                    request.UpdatedBy = currentUserId.Value;
+                }
+            }
+
+            var admin = await _platformAdminService.UpdatePlatformAdminByIdAsync(id, request!);
             return Ok(ApiResponseFactory.SuccessResponse(admin, ResponseMessages.PlatformAdminUpdated));
         }
 

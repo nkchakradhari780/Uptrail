@@ -81,3 +81,101 @@ Content-Type: application/json
 {
   "refreshToken": "{{refreshToken}}"
 }
+
+
+### ==========================================
+### Role Management Endpoints
+### ==========================================
+
+### 9. Create Role (Requires valid CompanyId)
+@companyId = 00000000-0000-0000-0000-000000000000
+POST {{Uptrail_Backend_HostAddress}}/api/Role
+Content-Type: application/json
+
+{
+  "companyId": "{{companyId}}",
+  "name": "HR Manager",
+  "isAdmin": false
+}
+
+### 10. Get All Roles (Returns 404 if no roles exist)
+GET {{Uptrail_Backend_HostAddress}}/api/Role
+Accept: application/json
+
+### 11. Get All Roles for a Company
+GET {{Uptrail_Backend_HostAddress}}/api/Role?companyId={{companyId}}
+Accept: application/json
+
+### 12. Get Roles by Company ID route
+GET {{Uptrail_Backend_HostAddress}}/api/Role/company/{{companyId}}
+Accept: application/json
+
+### 13. Search Roles
+GET {{Uptrail_Backend_HostAddress}}/api/Role/search?searchTerm=Manager
+Accept: application/json
+
+### 14. Get Role By Id
+@roleId = 00000000-0000-0000-0000-000000000000
+GET {{Uptrail_Backend_HostAddress}}/api/Role/{{roleId}}
+Accept: application/json
+
+### 15. Update Role By Id
+PUT {{Uptrail_Backend_HostAddress}}/api/Role/{{roleId}}
+Content-Type: application/json
+
+{
+  "name": "Senior HR Manager",
+  "isAdmin": false,
+  "isActive": true
+}
+
+### 16. Delete Role By Id
+DELETE {{Uptrail_Backend_HostAddress}}/api/Role/{{roleId}}
+Accept: application/json
+
+
+### ==========================================
+### Company Management Endpoints
+### ==========================================
+
+### 17. Create Company
+POST {{Uptrail_Backend_HostAddress}}/api/Company
+Content-Type: application/json
+
+{
+  "name": "Acme Innovations Ltd",
+  "email": "contact@acme.com",
+  "phoneNumber": "+1234567890",
+  "address": "123 Technology Park, Suite 400, Silicon Valley, CA",
+  "website": "https://acme.com"
+}
+
+### 18. Get All Companies (Returns 404 if no companies exist)
+GET {{Uptrail_Backend_HostAddress}}/api/Company
+Accept: application/json
+
+### 19. Search Companies by Name, Email, Phone, or ID
+GET {{Uptrail_Backend_HostAddress}}/api/Company/search?searchTerm=Acme
+Accept: application/json
+
+### 20. Get Company By Id
+@targetCompanyId = c1a11111-1111-1111-1111-111111111111
+GET {{Uptrail_Backend_HostAddress}}/api/Company/{{targetCompanyId}}
+Accept: application/json
+
+### 21. Update Company By Id
+PUT {{Uptrail_Backend_HostAddress}}/api/Company/{{targetCompanyId}}
+Content-Type: application/json
+
+{
+  "name": "Uptrail Technologies Global",
+  "email": "admin@uptrail.com",
+  "phoneNumber": "+1234567890",
+  "address": "100 Innovation Way, Suite 500, Tech City, CA",
+  "website": "https://uptrail.com",
+  "isActive": true
+}
+
+### 22. Delete Company By Id (Soft delete; fails if company has active users/roles)
+DELETE {{Uptrail_Backend_HostAddress}}/api/Company/{{targetCompanyId}}
+Accept: application/json

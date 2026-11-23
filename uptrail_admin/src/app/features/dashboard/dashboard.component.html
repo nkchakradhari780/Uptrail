@@ -1,281 +1,1233 @@
-<div class="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
-  <!-- Top Navbar -->
-  <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <!-- Logo & Brand -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-linear-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-md shadow-indigo-500/20">
-          <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        </div>
-        <div>
-          <span class="font-bold text-white text-lg tracking-tight">Uptrail</span>
-          <span class="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Admin</span>
-        </div>
-      </div>
+<div class="min-h-screen bg-slate-950 text-slate-100 flex">
+  <!-- Sidebar Component -->
+  <app-sidebar
+    [activeSection]="activeSection()"
+    [adminCount]="admins().length"
+    [companyCount]="companies().length"
+    [roleCount]="roles().length"
+    [isCollapsed]="isSidebarCollapsed()"
+    (sectionChange)="onSectionChanged($event)"
+    (toggleCollapse)="toggleSidebar()"
+    (logoutClick)="logout()"
+  ></app-sidebar>
 
-      <!-- User Profile & Actions -->
-      <div class="flex items-center gap-4">
-        <!-- Current Admin Info -->
-        <div class="hidden sm:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-slate-800/60 border border-slate-700/50">
-          <div class="w-8 h-8 rounded-lg bg-linear-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xs uppercase shadow">
-            {{ userInitials() }}
-          </div>
-          <div class="text-left">
-            <div class="text-xs font-semibold text-slate-200">{{ currentUser()?.name || 'Administrator' }}</div>
-            <div class="text-[11px] text-slate-400">{{ currentUser()?.email }}</div>
-          </div>
-        </div>
-
-        <!-- Manual Token Refresh Button -->
-        <button
-          (click)="refreshTokens()"
-          [disabled]="isRefreshing()"
-          title="Test JWT Token Refresh API"
-          class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700 transition"
-        >
-          <svg class="w-3.5 h-3.5" [class.animate-spin]="isRefreshing()" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          <span>Refresh Token</span>
-        </button>
-
-        <!-- Logout Button -->
-        <button
-          (click)="logout()"
-          class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-medium text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-all duration-150"
-        >
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          <span>Logout</span>
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content Area -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-    <!-- Welcome Banner -->
-    <div class="relative overflow-hidden rounded-2xl bg-linear-to-r from-indigo-950/70 via-slate-900 to-violet-950/50 border border-indigo-500/20 p-6 sm:p-8">
-      <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <span class="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-1 rounded-full mb-3">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            Active Admin Session
-          </span>
-          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-            Welcome back, {{ currentUser()?.name || 'Administrator' }}!
-          </h2>
-          <p class="text-slate-400 text-sm mt-1 max-w-2xl">
-            You are authenticated as a Platform Admin. You have full access to manage platform administrators, view system telemetry, and inspect authorization policies.
-          </p>
-        </div>
+  <!-- Main Content Wrapper -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+    <!-- Top Navbar -->
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
+      <div class="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <!-- Section Title & Breadcrumb -->
         <div class="flex items-center gap-3">
           <button
-            (click)="loadAdmins()"
-            class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs shadow-lg shadow-indigo-600/25 transition flex items-center gap-2"
+            (click)="toggleSidebar()"
+            class="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            title="Toggle Sidebar"
           >
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <div>
+            <h1 class="text-base sm:text-lg font-bold text-white tracking-tight">
+              <span *ngIf="activeSection() === 'admins'">Platform Administrators</span>
+              <span *ngIf="activeSection() === 'companies'">Companies Management</span>
+              <span *ngIf="activeSection() === 'roles'">Roles Management</span>
+            </h1>
+            <p class="text-[11px] text-slate-400 hidden sm:block">
+              Uptrail Platform Management Portal
+            </p>
+          </div>
+        </div>
+
+        <!-- User Profile & Actions -->
+        <div class="flex items-center gap-4">
+          <!-- Current Admin Profile Badge -->
+          <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-800/60 border border-slate-700/50">
+            <div class="w-7 h-7 rounded-lg bg-linear-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xs uppercase shadow">
+              {{ userInitials() }}
+            </div>
+            <div class="hidden sm:block text-left">
+              <div class="text-xs font-semibold text-slate-200">{{ currentUser()?.name || 'Administrator' }}</div>
+              <div class="text-[10px] text-slate-400">{{ currentUser()?.email }}</div>
+            </div>
+          </div>
+
+          <!-- Manual Token Refresh Button -->
+          <button
+            (click)="refreshTokens()"
+            [disabled]="isRefreshing()"
+            title="Test JWT Token Refresh API"
+            class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 border border-slate-700 transition"
+          >
+            <svg class="w-3.5 h-3.5" [class.animate-spin]="isRefreshing()" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            <span>Reload Data</span>
+            <span>Refresh Token</span>
           </button>
         </div>
       </div>
-    </div>
+    </header>
 
-    <!-- Metric Cards Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <!-- Card 1: Active Admins -->
-      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
-        <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">
-          <span>Platform Admins</span>
-          <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-            </svg>
-          </div>
+    <!-- Main Container -->
+    <main class="flex-1 p-4 sm:p-6 lg:p-8 space-y-6">
+      <!-- Notification Toast / Alert -->
+      <div
+        *ngIf="actionMessage()"
+        class="p-4 rounded-xl text-xs flex items-center justify-between transition-all shadow-lg shadow-black/20"
+        [ngClass]="isErrorMessage() ? 'bg-rose-500/20 border border-rose-500/40 text-rose-200' : 'bg-indigo-500/20 border border-indigo-500/40 text-indigo-200'"
+      >
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-2.5 rounded-full shrink-0" [ngClass]="isErrorMessage() ? 'bg-rose-400' : 'bg-indigo-400'"></span>
+          <span class="font-medium">{{ actionMessage() }}</span>
         </div>
-        <div class="text-2xl font-bold text-white">{{ admins().length }}</div>
-        <p class="text-xs text-slate-400 mt-1">Verified platform administrators</p>
+        <button (click)="actionMessage.set(null)" class="text-slate-400 hover:text-white text-base leading-none ml-4">&times;</button>
       </div>
 
-      <!-- Card 2: Auth Provider -->
-      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
-        <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">
-          <span>Auth Service</span>
-          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          </div>
-        </div>
-        <div class="text-2xl font-bold text-emerald-400">JWT Bearer</div>
-        <p class="text-xs text-slate-400 mt-1">Active access & refresh tokens</p>
-      </div>
-
-      <!-- Card 3: Backend API Status -->
-      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
-        <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">
-          <span>Backend API</span>
-          <div class="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
-            </svg>
-          </div>
-        </div>
-        <div class="text-2xl font-bold text-cyan-400">Port 5059</div>
-        <p class="text-xs text-slate-400 mt-1">ASP.NET Core Web API</p>
-      </div>
-
-      <!-- Card 4: Session Status -->
-      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition">
-        <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">
-          <span>Email Verified</span>
-          <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </div>
-        </div>
-        <div class="text-2xl font-bold text-white">
-          {{ currentUser()?.isEmailVerified ? 'Verified' : 'Pending' }}
-        </div>
-        <p class="text-xs text-slate-400 mt-1">{{ currentUser()?.email }}</p>
-      </div>
-    </div>
-
-    <!-- Notification Toast/Banner for Actions using *ngIf -->
-    <div *ngIf="actionMessage()" class="p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-200 text-xs flex items-center justify-between">
-      <span>{{ actionMessage() }}</span>
-      <button (click)="actionMessage.set(null)" class="text-slate-400 hover:text-white">&times;</button>
-    </div>
-
-    <!-- Platform Admin Management Section -->
-    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-      <!-- Table Header / Controls -->
-      <div class="p-5 sm:p-6 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h3 class="text-lg font-bold text-white">Platform Administrators</h3>
-          <p class="text-xs text-slate-400 mt-0.5">Live records queried from the .NET backend API</p>
-        </div>
-
-        <!-- Search Input (Query-based search using [(ngModel)]) -->
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-          <div class="relative w-full sm:w-72">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+      <!-- ========================================== -->
+      <!-- SECTION 1: PLATFORM ADMINS -->
+      <!-- ========================================== -->
+      <div *ngIf="activeSection() === 'admins'" class="space-y-6">
+        <!-- Overview Metrics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">
+              <span>Platform Admins</span>
+              <div class="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
             </div>
-            <input
-              type="text"
-              name="searchQuery"
-              [(ngModel)]="searchQuery"
-              (keyup.enter)="onSearch()"
-              placeholder="Search name, email, phone..."
-              class="w-full pl-9 pr-8 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
-            />
+            <div class="text-2xl font-bold text-white">{{ admins().length }}</div>
+            <p class="text-xs text-slate-400 mt-1">Verified platform administrators</p>
+          </div>
+
+          <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">
+              <span>Companies</span>
+              <div class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+            </div>
+            <div class="text-2xl font-bold text-white">{{ companies().length }}</div>
+            <p class="text-xs text-slate-400 mt-1">Registered tenant companies</p>
+          </div>
+
+          <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">
+              <span>Configured Roles</span>
+              <div class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+            </div>
+            <div class="text-2xl font-bold text-white">{{ roles().length }}</div>
+            <p class="text-xs text-slate-400 mt-1">Roles across organizations</p>
+          </div>
+
+          <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+            <div class="flex items-center justify-between text-slate-400 text-xs font-medium uppercase tracking-wider mb-2">
+              <span>Security Status</span>
+              <div class="w-8 h-8 rounded-lg bg-violet-500/10 text-violet-400 flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+            </div>
+            <div class="text-2xl font-bold text-emerald-400">JWT / Active</div>
+            <p class="text-xs text-slate-400 mt-1">HttpOnly cookie & Bearer token</p>
+          </div>
+        </div>
+
+        <!-- Platform Admins Directory Header & Search -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>Platform Admins Directory</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  {{ admins().length }} Total
+                </span>
+              </h3>
+              <p class="text-xs text-slate-400 mt-0.5">Manage and monitor administrative access to the Uptrail platform</p>
+            </div>
+
+            <!-- Search Form -->
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <div class="relative flex-1 sm:w-64">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  name="adminSearchQuery"
+                  [(ngModel)]="adminSearchQuery"
+                  (keyup.enter)="onSearchAdmins()"
+                  placeholder="Search name, email, phone..."
+                  class="w-full pl-9 pr-8 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
+                />
+                <button
+                  *ngIf="adminSearchQuery"
+                  (click)="clearAdminSearch()"
+                  class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-200"
+                >
+                  &times;
+                </button>
+              </div>
+              <button
+                (click)="onSearchAdmins()"
+                class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition shadow-md shadow-indigo-600/20"
+              >
+                Search
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Platform Admins Table -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="overflow-x-auto">
+            <div *ngIf="isLoadingAdmins(); else adminsContent" class="p-12 text-center text-slate-400 text-sm flex items-center justify-center gap-3">
+              <svg class="animate-spin h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <span>Loading administrators...</span>
+            </div>
+
+            <ng-template #adminsContent>
+              <div *ngIf="admins().length === 0; else adminsTable" class="p-12 text-center text-slate-400 text-sm">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 mx-auto flex items-center justify-center mb-3">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <p class="font-medium text-slate-300">No platform admins found.</p>
+                <p class="text-xs text-slate-500 mt-1">Try refining your search terms or verify database connectivity.</p>
+                <button (click)="clearAdminSearch()" class="mt-4 px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition">
+                  Reset Search
+                </button>
+              </div>
+
+              <ng-template #adminsTable>
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-950/60 text-slate-400 uppercase tracking-wider text-[11px] border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4 font-semibold">Administrator</th>
+                      <th class="py-3 px-4 font-semibold">Contact Info</th>
+                      <th class="py-3 px-4 font-semibold">Account Status</th>
+                      <th class="py-3 px-4 font-semibold">Verification</th>
+                      <th class="py-3 px-4 font-semibold">Created At</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    <tr *ngFor="let admin of admins(); trackBy: trackByAdminId" class="hover:bg-slate-800/30 transition">
+                      <td class="py-3.5 px-4">
+                        <div class="flex items-center gap-3">
+                          <div class="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 flex items-center justify-center font-bold text-xs">
+                            {{ admin.name.charAt(0) || 'A' }}
+                          </div>
+                          <div>
+                            <div class="font-semibold text-slate-200">{{ admin.name }}</div>
+                            <div class="text-[10px] text-slate-500 font-mono">{{ admin.id }}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="py-3.5 px-4">
+                        <div class="text-slate-200">{{ admin.email }}</div>
+                        <div class="text-[11px] text-slate-400">{{ admin.phoneNumber }}</div>
+                      </td>
+                      <td class="py-3.5 px-4">
+                        <span *ngIf="admin.isActive; else adminInactive" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          Active
+                        </span>
+                        <ng-template #adminInactive>
+                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                            Inactive
+                          </span>
+                        </ng-template>
+                      </td>
+                      <td class="py-3.5 px-4">
+                        <span *ngIf="admin.isEmailVerified; else adminUnverified" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                          Email Verified
+                        </span>
+                        <ng-template #adminUnverified>
+                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-800 text-slate-400 border border-slate-700">
+                            Unverified
+                          </span>
+                        </ng-template>
+                      </td>
+                      <td class="py-3.5 px-4 text-slate-400 text-[11px]">
+                        {{ admin.createdAt | date:'mediumDate' }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </ng-template>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========================================== -->
+      <!-- SECTION 2: COMPANIES MANAGEMENT -->
+      <!-- ========================================== -->
+      <div *ngIf="activeSection() === 'companies'" class="space-y-6">
+        <!-- Companies Header & Action Controls -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>Companies Management</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  {{ companies().length }} Total
+                </span>
+              </h3>
+              <p class="text-xs text-slate-400 mt-0.5">Manage registered tenant organizations, contacts, and active associations</p>
+            </div>
+
+            <!-- Create Company Action Button -->
             <button
-              *ngIf="searchQuery"
-              (click)="clearSearch()"
-              class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-200"
+              (click)="openCreateCompanyModal()"
+              class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs shadow-lg shadow-indigo-600/30 transition flex items-center gap-2 shrink-0 self-start md:self-auto"
             >
-              &times;
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Create New Company</span>
             </button>
           </div>
-          <button
-            (click)="onSearch()"
-            class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition shrink-0"
-          >
-            Search
-          </button>
+
+          <!-- Search & Filter Controls -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-800">
+            <!-- Search Companies Input -->
+            <div class="relative sm:col-span-2">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                name="companySearchQuery"
+                [(ngModel)]="companySearchQuery"
+                (keyup.enter)="onSearchCompanies()"
+                placeholder="Search company name, email, phone, or ID..."
+                class="w-full pl-9 pr-8 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
+              />
+              <button
+                *ngIf="companySearchQuery"
+                (click)="clearCompanySearch()"
+                class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-200"
+              >
+                &times;
+              </button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-2">
+              <button
+                (click)="onSearchCompanies()"
+                class="flex-1 py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition shadow-md shadow-indigo-600/20"
+              >
+                Search
+              </button>
+              <button
+                (click)="clearCompanySearch()"
+                class="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs border border-slate-800 transition"
+                title="Reset search"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Companies Table Section -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="overflow-x-auto">
+            <div *ngIf="isLoadingCompanies(); else companiesContent" class="p-12 text-center text-slate-400 text-sm flex items-center justify-center gap-3">
+              <svg class="animate-spin h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <span>Loading companies from backend...</span>
+            </div>
+
+            <ng-template #companiesContent>
+              <div *ngIf="companies().length === 0; else companiesTable" class="p-12 text-center text-slate-400 text-sm">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 mx-auto flex items-center justify-center mb-3">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+                <p class="font-medium text-slate-300">No companies found.</p>
+                <p class="text-xs text-slate-500 mt-1">Try clearing your search query or register a new company.</p>
+                <button (click)="openCreateCompanyModal()" class="mt-4 px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition">
+                  Create First Company
+                </button>
+              </div>
+
+              <ng-template #companiesTable>
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-950/60 text-slate-400 uppercase tracking-wider text-[11px] border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4 font-semibold">Company Name</th>
+                      <th class="py-3 px-4 font-semibold">Contact Info</th>
+                      <th class="py-3 px-4 font-semibold">Address</th>
+                      <th class="py-3 px-4 font-semibold text-center">Active Entities</th>
+                      <th class="py-3 px-4 font-semibold">Status</th>
+                      <th class="py-3 px-4 font-semibold">Created At</th>
+                      <th class="py-3 px-4 font-semibold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    <tr *ngFor="let company of companies(); trackBy: trackByCompanyId" class="hover:bg-slate-800/30 transition">
+                      <!-- Company Name & ID & Website -->
+                      <td class="py-3.5 px-4">
+                        <div class="flex items-center gap-2.5">
+                          <div class="w-8 h-8 rounded-lg bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 flex items-center justify-center font-bold text-xs">
+                            {{ company.name.charAt(0) || 'C' }}
+                          </div>
+                          <div>
+                            <div class="font-semibold text-slate-200">{{ company.name }}</div>
+                            <div class="text-[10px] text-slate-500 font-mono">{{ company.id }}</div>
+                            <a
+                              *ngIf="company.website"
+                              [href]="company.website"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="text-[11px] text-indigo-400 hover:underline inline-flex items-center gap-1 mt-0.5"
+                            >
+                              <span>{{ company.website }}</span>
+                              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </a>
+                          </div>
+                        </div>
+                      </td>
+
+                      <!-- Contact Details -->
+                      <td class="py-3.5 px-4">
+                        <div class="text-slate-200 font-medium">{{ company.email }}</div>
+                        <div class="text-[11px] text-slate-400">{{ company.phoneNumber }}</div>
+                      </td>
+
+                      <!-- Address -->
+                      <td class="py-3.5 px-4">
+                        <div class="text-slate-300 max-w-xs truncate" [title]="company.address">
+                          {{ company.address }}
+                        </div>
+                      </td>
+
+                      <!-- Active Users & Roles Count Badges -->
+                      <td class="py-3.5 px-4 text-center">
+                        <div class="inline-flex items-center gap-2">
+                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20" title="Active Users">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            {{ company.activeUsersCount }} Users
+                          </span>
+                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20" title="Active Roles">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            {{ company.activeRolesCount }} Roles
+                          </span>
+                        </div>
+                      </td>
+
+                      <!-- Active Status with *ngIf -->
+                      <td class="py-3.5 px-4">
+                        <span *ngIf="company.isActive; else companyInactive" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          Active
+                        </span>
+                        <ng-template #companyInactive>
+                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                            Inactive
+                          </span>
+                        </ng-template>
+                      </td>
+
+                      <!-- Created At -->
+                      <td class="py-3.5 px-4 text-slate-400 text-[11px]">
+                        {{ company.createdAt | date:'mediumDate' }}
+                      </td>
+
+                      <!-- Action Buttons -->
+                      <td class="py-3.5 px-4 text-right">
+                        <div class="inline-flex items-center gap-1.5">
+                          <!-- View Roles button -->
+                          <button
+                            (click)="viewCompanyRoles(company)"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-amber-400 hover:bg-slate-800 transition"
+                            title="View Roles of this Company"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+
+                          <!-- Edit button -->
+                          <button
+                            (click)="openEditCompanyModal(company)"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition"
+                            title="Edit Company"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+
+                          <!-- Delete button -->
+                          <button
+                            (click)="openDeleteCompanyModal(company)"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition"
+                            title="Delete Company"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </ng-template>
+            </ng-template>
+          </div>
         </div>
       </div>
 
-      <!-- Table Container with *ngIf and *ngFor -->
-      <div class="overflow-x-auto">
-        <div *ngIf="isLoadingAdmins(); else adminsContent" class="p-12 text-center text-slate-400 text-sm flex items-center justify-center gap-3">
-          <svg class="animate-spin h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-          </svg>
-          <span>Fetching platform admins...</span>
-        </div>
+      <!-- ========================================== -->
+      <!-- SECTION 3: ROLES MANAGEMENT -->
+      <!-- ========================================== -->
+      <div *ngIf="activeSection() === 'roles'" class="space-y-6">
+        <!-- Roles Header & Action Controls -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <span>Roles Management</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  {{ roles().length }} Total
+                </span>
+              </h3>
+              <p class="text-xs text-slate-400 mt-0.5">Manage company roles, admin privileges, and permissions</p>
+            </div>
 
-        <ng-template #adminsContent>
-          <div *ngIf="admins().length === 0; else adminsTable" class="p-12 text-center text-slate-400 text-sm">
-            <p>No platform admins found matching your query.</p>
-            <button (click)="clearSearch()" class="mt-3 text-xs text-indigo-400 hover:underline">Clear search filter</button>
+            <!-- Create Role Action Button -->
+            <button
+              (click)="openCreateRoleModal()"
+              class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs shadow-lg shadow-indigo-600/30 transition flex items-center gap-2 shrink-0 self-start md:self-auto"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Create New Role</span>
+            </button>
           </div>
 
-          <ng-template #adminsTable>
-            <table class="w-full text-left text-xs">
-              <thead class="bg-slate-950/60 text-slate-400 uppercase tracking-wider text-[11px] border-b border-slate-800">
-                <tr>
-                  <th class="py-3 px-4 font-semibold">Admin</th>
-                  <th class="py-3 px-4 font-semibold">Contact Info</th>
-                  <th class="py-3 px-4 font-semibold">Status</th>
-                  <th class="py-3 px-4 font-semibold">Email Verified</th>
-                  <th class="py-3 px-4 font-semibold">Created At</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-800/60">
-                <tr *ngFor="let admin of admins(); trackBy: trackByAdminId" class="hover:bg-slate-800/30 transition">
-                  <!-- Name & Avatar -->
-                  <td class="py-3.5 px-4 flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 flex items-center justify-center font-bold text-xs uppercase">
-                      {{ admin.name.charAt(0) || 'A' }}
-                    </div>
-                    <div>
-                      <span class="font-medium text-slate-200">{{ admin.name }}</span>
-                      <div class="text-[10px] text-slate-500 font-mono">{{ admin.id }}</div>
-                    </div>
-                  </td>
+          <!-- Search & Filter Controls -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2 border-t border-slate-800">
+            <!-- Search Roles by Name or ID -->
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                name="roleSearchQuery"
+                [(ngModel)]="roleSearchQuery"
+                (keyup.enter)="onSearchRoles()"
+                placeholder="Search role name, ID..."
+                class="w-full pl-9 pr-8 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition"
+              />
+              <button
+                *ngIf="roleSearchQuery"
+                (click)="clearRoleSearch()"
+                class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 hover:text-slate-200"
+              >
+                &times;
+              </button>
+            </div>
 
-                  <!-- Email & Phone -->
-                  <td class="py-3.5 px-4">
-                    <div class="text-slate-200">{{ admin.email }}</div>
-                    <div class="text-slate-400 text-[11px]">{{ admin.phoneNumber || 'N/A' }}</div>
-                  </td>
+            <!-- Filter Roles by Company Dropdown -->
+            <div class="relative">
+              <select
+                name="roleCompanyFilter"
+                [(ngModel)]="roleCompanyFilter"
+                (change)="onCompanyFilterChange()"
+                class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500 transition"
+              >
+                <option value="">All Companies</option>
+                <option *ngFor="let comp of companies()" [value]="comp.id">
+                  {{ comp.name }}
+                </option>
+              </select>
+            </div>
 
-                  <!-- Active Status using *ngIf and else -->
-                  <td class="py-3.5 px-4">
-                    <span *ngIf="admin.isActive; else inactiveStatus" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      Active
-                    </span>
-                    <ng-template #inactiveStatus>
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-500/10 text-slate-400 border border-slate-500/20">
-                        Inactive
-                      </span>
-                    </ng-template>
-                  </td>
+            <!-- Filter / Search Buttons -->
+            <div class="flex items-center gap-2">
+              <button
+                (click)="onSearchRoles()"
+                class="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition"
+              >
+                Apply Filters
+              </button>
+              <button
+                (click)="clearRoleSearch(); clearCompanyFilter()"
+                class="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 text-xs border border-slate-800 transition"
+                title="Reset all filters"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
 
-                  <!-- Email Verified using *ngIf and else -->
-                  <td class="py-3.5 px-4">
-                    <span *ngIf="admin.isEmailVerified; else unverifiedStatus" class="text-emerald-400 inline-flex items-center gap-1 text-[11px]">
-                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                      Verified
-                    </span>
-                    <ng-template #unverifiedStatus>
-                      <span class="text-slate-500 text-[11px]">Unverified</span>
-                    </ng-template>
-                  </td>
+        <!-- Roles Table Section -->
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+          <div class="overflow-x-auto">
+            <div *ngIf="isLoadingRoles(); else rolesContent" class="p-12 text-center text-slate-400 text-sm flex items-center justify-center gap-3">
+              <svg class="animate-spin h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <span>Loading roles from backend...</span>
+            </div>
 
-                  <!-- Created At -->
-                  <td class="py-3.5 px-4 text-slate-400 text-[11px]">
-                    {{ admin.createdAt | date:'mediumDate' }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </ng-template>
-        </ng-template>
+            <ng-template #rolesContent>
+              <div *ngIf="roles().length === 0; else rolesTable" class="p-12 text-center text-slate-400 text-sm">
+                <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 mx-auto flex items-center justify-center mb-3">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                </div>
+                <p class="font-medium text-slate-300">No roles found.</p>
+                <p class="text-xs text-slate-500 mt-1">Try clearing your search query or create a new role.</p>
+                <button (click)="openCreateRoleModal()" class="mt-4 px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition">
+                  Create First Role
+                </button>
+              </div>
+
+              <ng-template #rolesTable>
+                <table class="w-full text-left text-xs">
+                  <thead class="bg-slate-950/60 text-slate-400 uppercase tracking-wider text-[11px] border-b border-slate-800">
+                    <tr>
+                      <th class="py-3 px-4 font-semibold">Role Name</th>
+                      <th class="py-3 px-4 font-semibold">Company</th>
+                      <th class="py-3 px-4 font-semibold">Admin Privilege</th>
+                      <th class="py-3 px-4 font-semibold">Status</th>
+                      <th class="py-3 px-4 font-semibold">Created At</th>
+                      <th class="py-3 px-4 font-semibold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/60">
+                    <tr *ngFor="let role of roles(); trackBy: trackByRoleId" class="hover:bg-slate-800/30 transition">
+                      <!-- Role Name & ID -->
+                      <td class="py-3.5 px-4">
+                        <div class="flex items-center gap-2.5">
+                          <div class="w-7 h-7 rounded-lg bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 flex items-center justify-center font-bold text-[11px]">
+                            {{ role.name.charAt(0) || 'R' }}
+                          </div>
+                          <div>
+                            <span class="font-semibold text-slate-200">{{ role.name }}</span>
+                            <div class="text-[10px] text-slate-500 font-mono">{{ role.id }}</div>
+                          </div>
+                        </div>
+                      </td>
+
+                      <!-- Company Info -->
+                      <td class="py-3.5 px-4">
+                        <div class="text-slate-200 font-medium">{{ role.companyName || 'N/A' }}</div>
+                        <div class="text-[10px] text-slate-500 font-mono">{{ role.companyId }}</div>
+                      </td>
+
+                      <!-- Admin Privilege Badge with *ngIf -->
+                      <td class="py-3.5 px-4">
+                        <span *ngIf="role.isAdmin; else standardRoleBadge" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05A3.989 3.989 0 0115 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.715-5.349L11 6.477V16h2a1 1 0 110 2H7a1 1 0 110-2h2V6.477L6.237 7.582l1.715 5.349a1 1 0 01-.285 1.05A3.989 3.989 0 015 15a3.989 3.989 0 01-2.667-1.019 1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1z" clip-rule="evenodd" />
+                          </svg>
+                          Company Admin
+                        </span>
+                        <ng-template #standardRoleBadge>
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-800 text-slate-400 border border-slate-700">
+                            Standard Role
+                          </span>
+                        </ng-template>
+                      </td>
+
+                      <!-- Active Status with *ngIf -->
+                      <td class="py-3.5 px-4">
+                        <span *ngIf="role.isActive; else roleInactive" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          Active
+                        </span>
+                        <ng-template #roleInactive>
+                          <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                            Inactive
+                          </span>
+                        </ng-template>
+                      </td>
+
+                      <!-- Created At -->
+                      <td class="py-3.5 px-4 text-slate-400 text-[11px]">
+                        {{ role.createdAt | date:'mediumDate' }}
+                      </td>
+
+                      <!-- Action Buttons -->
+                      <td class="py-3.5 px-4 text-right">
+                        <div class="inline-flex items-center gap-1.5">
+                          <button
+                            (click)="openEditRoleModal(role)"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-slate-800 transition"
+                            title="Edit Role"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button
+                            (click)="openDeleteRoleModal(role)"
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition"
+                            title="Delete Role"
+                          >
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </ng-template>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 1: CREATE ROLE (using *ngIf) -->
+  <!-- ========================================== -->
+  <div *ngIf="isCreateRoleModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+        <h4 class="text-base font-bold text-white">Create New Role</h4>
+        <button (click)="closeCreateRoleModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <!-- Modal Error Alert -->
+      <div *ngIf="modalErrorMessage()" class="mx-5 mt-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{{ modalErrorMessage() }}</span>
+        </div>
+        <button type="button" (click)="modalErrorMessage.set(null)" class="text-rose-400 hover:text-white">&times;</button>
+      </div>
+
+      <form (ngSubmit)="submitCreateRole()" class="p-5 space-y-4">
+        <!-- Company Dropdown Input -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Company *</label>
+          <select
+            name="createCompanyId"
+            [(ngModel)]="createRoleForm.companyId"
+            required
+            class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+          >
+            <option value="" disabled>-- Select a Company --</option>
+            <option *ngFor="let comp of companies()" [value]="comp.id">
+              {{ comp.name }} ({{ comp.email }})
+            </option>
+          </select>
+          <span *ngIf="companies().length === 0" class="text-[10px] text-amber-400 mt-1 block">
+            No companies found. Please create a company first.
+          </span>
+        </div>
+
+        <!-- Role Name Input -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Role Name *</label>
+          <input
+            type="text"
+            name="createRoleName"
+            [(ngModel)]="createRoleForm.name"
+            required
+            placeholder="e.g. Finance Officer, HR Manager"
+            class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <!-- Is Admin Checkbox -->
+        <div class="flex items-center gap-2.5 pt-1">
+          <input
+            type="checkbox"
+            id="createIsAdmin"
+            name="createIsAdmin"
+            [(ngModel)]="createRoleForm.isAdmin"
+            class="w-4 h-4 rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+          />
+          <label for="createIsAdmin" class="text-xs text-slate-300 cursor-pointer select-none">
+            Grant Company Admin Privileges
+          </label>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <button
+            type="button"
+            (click)="closeCreateRoleModal()"
+            class="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="isSubmittingRole()"
+            class="px-4 py-2 rounded-xl text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-2"
+          >
+            <span *ngIf="isSubmittingRole()" class="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
+            <span>Create Role</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 2: EDIT ROLE (using *ngIf) -->
+  <!-- ========================================== -->
+  <div *ngIf="isEditRoleModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+        <h4 class="text-base font-bold text-white">Edit Role</h4>
+        <button (click)="closeEditRoleModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <!-- Modal Error Alert -->
+      <div *ngIf="modalErrorMessage()" class="mx-5 mt-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{{ modalErrorMessage() }}</span>
+        </div>
+        <button type="button" (click)="modalErrorMessage.set(null)" class="text-rose-400 hover:text-white">&times;</button>
+      </div>
+
+      <form (ngSubmit)="submitUpdateRole()" class="p-5 space-y-4">
+        <!-- Role Name Input -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Role Name *</label>
+          <input
+            type="text"
+            name="editRoleName"
+            [(ngModel)]="editRoleForm.name"
+            required
+            placeholder="e.g. Senior Manager"
+            class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <!-- Is Admin Checkbox -->
+        <div class="flex items-center gap-2.5">
+          <input
+            type="checkbox"
+            id="editIsAdmin"
+            name="editIsAdmin"
+            [(ngModel)]="editRoleForm.isAdmin"
+            class="w-4 h-4 rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+          />
+          <label for="editIsAdmin" class="text-xs text-slate-300 cursor-pointer select-none">
+            Grant Company Admin Privileges
+          </label>
+        </div>
+
+        <!-- Is Active Checkbox -->
+        <div class="flex items-center gap-2.5">
+          <input
+            type="checkbox"
+            id="editIsActive"
+            name="editIsActive"
+            [(ngModel)]="editRoleForm.isActive"
+            class="w-4 h-4 rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+          />
+          <label for="editIsActive" class="text-xs text-slate-300 cursor-pointer select-none">
+            Role is Active
+          </label>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <button
+            type="button"
+            (click)="closeEditRoleModal()"
+            class="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="isSubmittingRole()"
+            class="px-4 py-2 rounded-xl text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-2"
+          >
+            <span *ngIf="isSubmittingRole()" class="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
+            <span>Save Changes</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 3: DELETE ROLE CONFIRMATION -->
+  <!-- ========================================== -->
+  <div *ngIf="isDeleteRoleModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl p-6 text-center space-y-4">
+      <div class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-400 mx-auto flex items-center justify-center">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+
+      <div>
+        <h4 class="text-base font-bold text-white">Delete Role</h4>
+        <p class="text-xs text-slate-400 mt-1">
+          Are you sure you want to deactivate and delete
+          <span class="font-semibold text-slate-200">"{{ selectedRole()?.name }}"</span>?
+        </p>
+      </div>
+
+      <!-- Modal Error Alert -->
+      <div *ngIf="modalErrorMessage()" class="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between gap-2 text-left">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{{ modalErrorMessage() }}</span>
+        </div>
+        <button type="button" (click)="modalErrorMessage.set(null)" class="text-rose-400 hover:text-white">&times;</button>
+      </div>
+
+      <div class="flex items-center justify-center gap-3 pt-2">
+        <button
+          type="button"
+          (click)="closeDeleteRoleModal()"
+          class="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="confirmDeleteRole()"
+          [disabled]="isSubmittingRole()"
+          class="px-4 py-2 rounded-xl text-xs font-medium bg-rose-600 hover:bg-rose-500 text-white transition flex items-center gap-2"
+        >
+          <span *ngIf="isSubmittingRole()" class="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
+          <span>Delete Role</span>
+        </button>
       </div>
     </div>
-  </main>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 4: CREATE COMPANY (using *ngIf) -->
+  <!-- ========================================== -->
+  <div *ngIf="isCreateCompanyModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+        <h4 class="text-base font-bold text-white">Create New Company</h4>
+        <button (click)="closeCreateCompanyModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <!-- Modal Error Alert -->
+      <div *ngIf="modalErrorMessage()" class="mx-5 mt-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{{ modalErrorMessage() }}</span>
+        </div>
+        <button type="button" (click)="modalErrorMessage.set(null)" class="text-rose-400 hover:text-white">&times;</button>
+      </div>
+
+      <form (ngSubmit)="submitCreateCompany()" class="p-5 space-y-4">
+        <!-- Company Name Input -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Company Name *</label>
+          <input
+            type="text"
+            name="createCompanyName"
+            [(ngModel)]="createCompanyForm.name"
+            required
+            placeholder="e.g. Acme Innovations Ltd"
+            class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <!-- Email & Phone in 2 cols -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address *</label>
+            <input
+              type="email"
+              name="createCompanyEmail"
+              [(ngModel)]="createCompanyForm.email"
+              required
+              placeholder="e.g. contact@acme.com"
+              class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Phone Number *</label>
+            <input
+              type="text"
+              name="createCompanyPhone"
+              [(ngModel)]="createCompanyForm.phoneNumber"
+              required
+              placeholder="e.g. +1 555-0199"
+              class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Address *</label>
+          <textarea
+            name="createCompanyAddress"
+            [(ngModel)]="createCompanyForm.address"
+            required
+            rows="2"
+            placeholder="e.g. 100 Innovation Way, Suite 400, Tech City, CA"
+            class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Website (Optional) -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Website (Optional)</label>
+          <input
+            type="url"
+            name="createCompanyWebsite"
+            [(ngModel)]="createCompanyForm.website"
+            placeholder="e.g. https://acme.com"
+            class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <button
+            type="button"
+            (click)="closeCreateCompanyModal()"
+            class="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="isSubmittingCompany()"
+            class="px-4 py-2 rounded-xl text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-2"
+          >
+            <span *ngIf="isSubmittingCompany()" class="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
+            <span>Create Company</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 5: EDIT COMPANY (using *ngIf) -->
+  <!-- ========================================== -->
+  <div *ngIf="isEditCompanyModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+        <h4 class="text-base font-bold text-white">Edit Company</h4>
+        <button (click)="closeEditCompanyModal()" class="text-slate-400 hover:text-white text-lg">&times;</button>
+      </div>
+
+      <!-- Modal Error Alert -->
+      <div *ngIf="modalErrorMessage()" class="mx-5 mt-4 p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{{ modalErrorMessage() }}</span>
+        </div>
+        <button type="button" (click)="modalErrorMessage.set(null)" class="text-rose-400 hover:text-white">&times;</button>
+      </div>
+
+      <form (ngSubmit)="submitUpdateCompany()" class="p-5 space-y-4">
+        <!-- Company Name Input -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Company Name *</label>
+          <input
+            type="text"
+            name="editCompanyName"
+            [(ngModel)]="editCompanyForm.name"
+            required
+            placeholder="e.g. Acme Innovations Ltd"
+            class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <!-- Email & Phone in 2 cols -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address *</label>
+            <input
+              type="email"
+              name="editCompanyEmail"
+              [(ngModel)]="editCompanyForm.email"
+              required
+              placeholder="e.g. contact@acme.com"
+              class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Phone Number *</label>
+            <input
+              type="text"
+              name="editCompanyPhone"
+              [(ngModel)]="editCompanyForm.phoneNumber"
+              required
+              placeholder="e.g. +1 555-0199"
+              class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+            />
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Address *</label>
+          <textarea
+            name="editCompanyAddress"
+            [(ngModel)]="editCompanyForm.address"
+            required
+            rows="2"
+            placeholder="e.g. 100 Innovation Way, Suite 400, Tech City, CA"
+            class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500 resize-none"
+          ></textarea>
+        </div>
+
+        <!-- Website (Optional) -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Website (Optional)</label>
+          <input
+            type="url"
+            name="editCompanyWebsite"
+            [(ngModel)]="editCompanyForm.website"
+            placeholder="e.g. https://acme.com"
+            class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
+        <!-- Is Active Checkbox -->
+        <div class="flex items-center gap-2.5">
+          <input
+            type="checkbox"
+            id="editCompanyIsActive"
+            name="editCompanyIsActive"
+            [(ngModel)]="editCompanyForm.isActive"
+            class="w-4 h-4 rounded bg-slate-950 border-slate-800 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-slate-900"
+          />
+          <label for="editCompanyIsActive" class="text-xs text-slate-300 cursor-pointer select-none">
+            Company is Active
+          </label>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+          <button
+            type="button"
+            (click)="closeEditCompanyModal()"
+            class="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="isSubmittingCompany()"
+            class="px-4 py-2 rounded-xl text-xs font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-2"
+          >
+            <span *ngIf="isSubmittingCompany()" class="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
+            <span>Save Changes</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL 6: DELETE COMPANY CONFIRMATION -->
+  <!-- ========================================== -->
+  <div *ngIf="isDeleteCompanyModalOpen()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl p-6 text-center space-y-4">
+      <div class="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-400 mx-auto flex items-center justify-center">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+      </div>
+
+      <div>
+        <h4 class="text-base font-bold text-white">Delete Company</h4>
+        <p class="text-xs text-slate-400 mt-1">
+          Are you sure you want to deactivate and delete
+          <span class="font-semibold text-slate-200">"{{ selectedCompany()?.name }}"</span>?
+        </p>
+        <p class="text-[11px] text-amber-400/90 mt-2 bg-amber-500/10 border border-amber-500/20 rounded-lg p-2">
+          Note: Cannot delete companies with active users or roles.
+        </p>
+      </div>
+
+      <!-- Modal Error Alert -->
+      <div *ngIf="modalErrorMessage()" class="p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center justify-between gap-2 text-left">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-rose-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <span>{{ modalErrorMessage() }}</span>
+        </div>
+        <button type="button" (click)="modalErrorMessage.set(null)" class="text-rose-400 hover:text-white">&times;</button>
+      </div>
+
+      <div class="flex items-center justify-center gap-3 pt-2">
+        <button
+          type="button"
+          (click)="closeDeleteCompanyModal()"
+          class="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          (click)="confirmDeleteCompany()"
+          [disabled]="isSubmittingCompany()"
+          class="px-4 py-2 rounded-xl text-xs font-medium bg-rose-600 hover:bg-rose-500 text-white transition flex items-center gap-2"
+        >
+          <span *ngIf="isSubmittingCompany()" class="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
+          <span>Delete Company</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

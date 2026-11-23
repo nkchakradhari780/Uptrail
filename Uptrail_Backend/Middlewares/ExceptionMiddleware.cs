@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Uptrail_Backend.Common.Constants;
 using Uptrail_Backend.Common.Responses;
 using Uptrail_Backend.Exceptions;
 
@@ -66,7 +67,7 @@ namespace Uptrail_Backend.Middlewares
 
                     case DbUpdateConcurrencyException:
                         context.Response.StatusCode = StatusCodes.Status409Conflict;
-                        await context.Response.WriteAsJsonAsync(ApiResponseFactory.ErrorResponse<object?>("The record was modified by another operation. Please refresh and try again."));
+                        await context.Response.WriteAsJsonAsync(ApiResponseFactory.ErrorResponse<object?>(ResponseMessages.ConcurrencyError));
                         break;
 
                     case DbUpdateException dbUpdateException:
@@ -78,7 +79,7 @@ namespace Uptrail_Backend.Middlewares
                     default:
                         _logger.LogError(ex, "An unhandled exception occurred.");
                         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                        await context.Response.WriteAsJsonAsync(ApiResponseFactory.ErrorResponse<object?>("An unexpected internal server error occurred."));
+                        await context.Response.WriteAsJsonAsync(ApiResponseFactory.ErrorResponse<object?>(ResponseMessages.InternalServerError));
                         break;
                 }
             }

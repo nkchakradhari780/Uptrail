@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Uptrail_Backend.Common.Constants;
 using Uptrail_Backend.Common.Responses;
 using Uptrail_Backend.Data;
 using Uptrail_Backend.Helpers.Implementations;
@@ -76,6 +77,10 @@ builder.Services.AddScoped<IPlatformAdminRepository, PlatformAdminRepository>();
 builder.Services.AddScoped<IPlatformAdminAuthRepository, PlatformAdminAuthRepository>();
 builder.Services.AddScoped<IPlatformAdminService, PlatformAdminService>();
 builder.Services.AddScoped<IPlatformAdminAuthService, PlatformAdminAuthService>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
 
 builder.Services.AddCors(options =>
 {
@@ -103,7 +108,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
             .SelectMany(v => v.Errors)
             .Select(e => e.ErrorMessage)
             .FirstOrDefault(msg => !string.IsNullOrWhiteSpace(msg))
-            ?? "Validation failed. Please verify the submitted data.";
+            ?? ResponseMessages.ValidationFailed;
 
         return new BadRequestObjectResult(ApiResponseFactory.ErrorResponse<object?>(firstError));
     };

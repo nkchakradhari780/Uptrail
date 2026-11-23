@@ -1,0 +1,145 @@
+<aside
+  class="bg-slate-900 border-r border-slate-800 transition-all duration-300 flex flex-col shrink-0 min-h-full"
+  [class.w-64]="!isCollapsed"
+  [class.w-20]="isCollapsed"
+>
+  <!-- Sidebar Brand Header -->
+  <div class="h-16 px-4 flex items-center justify-between border-b border-slate-800">
+    <div class="flex items-center gap-3 overflow-hidden" *ngIf="!isCollapsed">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
+        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      </div>
+      <div class="truncate">
+        <span class="font-bold text-white text-base tracking-tight">Uptrail</span>
+        <span class="ml-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">Admin</span>
+      </div>
+    </div>
+
+    <!-- Collapsed Logo Icon -->
+    <div *ngIf="isCollapsed" class="w-full flex justify-center">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-md shadow-indigo-500/20">
+        <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      </div>
+    </div>
+
+    <!-- Toggle Collapse Button (Only shown when not collapsed) -->
+    <button
+      *ngIf="!isCollapsed"
+      (click)="onToggleCollapse()"
+      title="Collapse Sidebar"
+      class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+    >
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Navigation Menu -->
+  <div class="flex-1 py-6 px-3 space-y-1.5">
+    <div *ngIf="!isCollapsed" class="px-3 pb-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+      Management
+    </div>
+
+    <!-- Platform Admins Nav Item -->
+    <button
+      type="button"
+      (click)="selectSection('admins')"
+      class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all group relative"
+      [ngClass]="activeSection === 'admins' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
+      [attr.title]="isCollapsed ? 'Platform Admins' : null"
+    >
+      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+
+      <span *ngIf="!isCollapsed" class="flex-1 text-left truncate">Platform Admins</span>
+
+      <span
+        *ngIf="!isCollapsed && adminCount > 0"
+        class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+        [ngClass]="activeSection === 'admins' ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'"
+      >
+        {{ adminCount }}
+      </span>
+    </button>
+
+    <!-- Companies Nav Item -->
+    <button
+      type="button"
+      (click)="selectSection('companies')"
+      class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all group relative"
+      [ngClass]="activeSection === 'companies' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
+      [attr.title]="isCollapsed ? 'Companies Management' : null"
+    >
+      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+
+      <span *ngIf="!isCollapsed" class="flex-1 text-left truncate">Companies</span>
+
+      <span
+        *ngIf="!isCollapsed && companyCount > 0"
+        class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+        [ngClass]="activeSection === 'companies' ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'"
+      >
+        {{ companyCount }}
+      </span>
+    </button>
+
+    <!-- Roles Nav Item -->
+    <button
+      type="button"
+      (click)="selectSection('roles')"
+      class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all group relative"
+      [ngClass]="activeSection === 'roles' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'"
+      [attr.title]="isCollapsed ? 'Roles Management' : null"
+    >
+      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+
+      <span *ngIf="!isCollapsed" class="flex-1 text-left truncate">Roles</span>
+
+      <span
+        *ngIf="!isCollapsed && roleCount > 0"
+        class="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+        [ngClass]="activeSection === 'roles' ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'"
+      >
+        {{ roleCount }}
+      </span>
+    </button>
+  </div>
+
+  <!-- Sidebar Footer / Expand Toggle & Logout -->
+  <div class="p-3 border-t border-slate-800 space-y-2">
+    <!-- Expand button when collapsed -->
+    <button
+      *ngIf="isCollapsed"
+      (click)="onToggleCollapse()"
+      title="Expand Sidebar"
+      class="w-full flex justify-center items-center py-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition"
+    >
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+      </svg>
+    </button>
+
+    <!-- Logout Action -->
+    <button
+      type="button"
+      (click)="onLogout()"
+      class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition"
+      [attr.title]="isCollapsed ? 'Logout' : null"
+    >
+      <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+      </svg>
+      <span *ngIf="!isCollapsed" class="truncate">Logout</span>
+    </button>
+  </div>
+</aside>

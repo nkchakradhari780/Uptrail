@@ -28,7 +28,7 @@ namespace Uptrail_Backend.Services.Implementations
                 || string.IsNullOrWhiteSpace(platformAdmin.Password)
                 || string.IsNullOrWhiteSpace(platformAdmin.PhoneNumber))
             {
-                throw new BadRequestException("Name, Email, Password, and PhoneNumber are required.");
+                throw new BadRequestException(ResponseMessages.AdminCreateFieldsRequired);
             }
 
             if (await _repository.PlatformAdminEmailExistsAsync(platformAdmin.Email)
@@ -56,29 +56,29 @@ namespace Uptrail_Backend.Services.Implementations
         {
             if (id == Guid.Empty)
             {
-                throw new BadRequestException("A valid non-empty platform admin ID is required.");
+                throw new BadRequestException(ResponseMessages.AdminIdRequired);
             }
 
             var admin = await _repository.GetPlatformAdminByIdAsync(id);
-            return admin ?? throw new NotFoundException($"Platform admin with ID '{id}' was not found.");
+            return admin ?? throw new NotFoundException(string.Format(ResponseMessages.PlatformAdminNotFoundWithId, id));
         }
 
         public async Task<PlatformAdminResponseDto> GetPlatformAdminByEmailAsync(string email)
         {
             if (string.IsNullOrWhiteSpace(email))
             {
-                throw new BadRequestException("A valid email address is required.");
+                throw new BadRequestException(ResponseMessages.EmailRequired);
             }
 
             var admin = await _repository.GetPlatformAdminByEmailAsync(email.Trim());
-            return admin ?? throw new NotFoundException($"Platform admin with email '{email}' was not found.");
+            return admin ?? throw new NotFoundException(string.Format(ResponseMessages.PlatformAdminNotFoundWithEmail, email));
         }
 
         public async Task<List<PlatformAdminResponseDto>> SearchPlatformAdminsAsync(string searchTerm)
         {
             if (string.IsNullOrWhiteSpace(searchTerm))
             {
-                throw new BadRequestException("A search term (name, email, phone number, or ID) is required.");
+                throw new BadRequestException(ResponseMessages.SearchTermRequired);
             }
 
             var cleanTerm = searchTerm.Trim().Trim('"', '\'');
@@ -93,7 +93,7 @@ namespace Uptrail_Backend.Services.Implementations
 
             if (string.IsNullOrWhiteSpace(cleanTerm))
             {
-                throw new BadRequestException("A search term (name, email, phone number, or ID) is required.");
+                throw new BadRequestException(ResponseMessages.SearchTermRequired);
             }
 
             var admins = await _repository.SearchPlatformAdminsAsync(cleanTerm);
@@ -111,7 +111,7 @@ namespace Uptrail_Backend.Services.Implementations
         {
             if (id == Guid.Empty)
             {
-                throw new BadRequestException("A valid non-empty platform admin ID is required.");
+                throw new BadRequestException(ResponseMessages.AdminIdRequired);
             }
 
             if (platformAdmin == null
@@ -119,13 +119,13 @@ namespace Uptrail_Backend.Services.Implementations
                 || string.IsNullOrWhiteSpace(platformAdmin.Email)
                 || string.IsNullOrWhiteSpace(platformAdmin.PhoneNumber))
             {
-                throw new BadRequestException("Name, Email, and PhoneNumber are required.");
+                throw new BadRequestException(ResponseMessages.AdminUpdateFieldsRequired);
             }
 
             var existing = await _repository.GetPlatformAdminByIdAsync(id);
             if (existing is null)
             {
-                throw new NotFoundException($"Platform admin with ID '{id}' was not found.");
+                throw new NotFoundException(string.Format(ResponseMessages.PlatformAdminNotFoundWithId, id));
             }
 
             var emailChanged = !string.Equals(existing.Email, platformAdmin.Email.Trim(), StringComparison.OrdinalIgnoreCase);
@@ -138,19 +138,19 @@ namespace Uptrail_Backend.Services.Implementations
             }
 
             var updated = await _repository.UpdatePlatformAdminByIdAsync(id, platformAdmin);
-            return updated ?? throw new NotFoundException($"Platform admin with ID '{id}' was not found.");
+            return updated ?? throw new NotFoundException(string.Format(ResponseMessages.PlatformAdminNotFoundWithId, id));
         }
 
         public async Task DeletePlatformAdminByIdAsync(Guid id)
         {
             if (id == Guid.Empty)
             {
-                throw new BadRequestException("A valid non-empty platform admin ID is required.");
+                throw new BadRequestException(ResponseMessages.AdminIdRequired);
             }
 
             if (!await _repository.DeletePlatformAdminById(id))
             {
-                throw new NotFoundException($"Platform admin with ID '{id}' was not found.");
+                throw new NotFoundException(string.Format(ResponseMessages.PlatformAdminNotFoundWithId, id));
             }
         }
     }

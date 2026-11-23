@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Uptrail_Backend.Common.Constants;
 using Uptrail_Backend.Exceptions;
 using Uptrail_Backend.Helpers.Interfaces;
 using Uptrail_Backend.Models.Dtos.PlatformAdminDtos;
@@ -33,14 +34,14 @@ namespace Uptrail_Backend.Services.Implementations
         {
             if (request is null || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
             {
-                throw new BadRequestException("Email and password are required.");
+                throw new BadRequestException(ResponseMessages.EmailAndPasswordRequired);
             }
 
             var admin = await _repository.GetActiveByEmailAsync(request.Email);
 
             if (admin is null || !_passwordHasher.VerifyPassword(request.Password, admin.PasswordHash))
             {
-                throw new UnauthorizedAccessException("Invalid email or password.");
+                throw new UnauthorizedAccessException(ResponseMessages.InvalidEmailOrPassword);
             }
 
             await _repository.UpdateLastLoginAtAsync(admin.Id);
@@ -51,7 +52,7 @@ namespace Uptrail_Backend.Services.Implementations
         {
             if (request is null || string.IsNullOrWhiteSpace(request.RefreshToken))
             {
-                throw new BadRequestException("The refresh token is required.");
+                throw new BadRequestException(ResponseMessages.RefreshTokenRequired);
             }
 
             Guid adminId;
@@ -61,7 +62,7 @@ namespace Uptrail_Backend.Services.Implementations
             }
             catch (Exception ex) when (ex is SecurityTokenException or ArgumentException)
             {
-                throw new UnauthorizedAccessException("The refresh token is invalid or expired.", ex);
+                throw new UnauthorizedAccessException(ResponseMessages.RefreshTokenInvalidOrExpired, ex);
             }
 
             var storedToken = await _repository.GetRefreshTokenByHashAsync(HashToken(request.RefreshToken));
@@ -70,13 +71,13 @@ namespace Uptrail_Backend.Services.Implementations
                 || storedToken.ExpiresAt <= DateTime.UtcNow
                 || storedToken.PlatformAdminId != adminId)
             {
-                throw new UnauthorizedAccessException("The refresh token is invalid or expired.");
+                throw new UnauthorizedAccessException(ResponseMessages.RefreshTokenInvalidOrExpired);
             }
 
             var admin = await _repository.GetActiveByIdAsync(adminId);
             if (admin is null)
             {
-                throw new UnauthorizedAccessException("The platform admin is inactive or does not exist.");
+                throw new UnauthorizedAccessException(ResponseMessages.PlatformAdminInactiveOrNotFound);
             }
 
             await _repository.RevokeRefreshTokenAsync(storedToken);
@@ -87,7 +88,7 @@ namespace Uptrail_Backend.Services.Implementations
         {
             if (request is null || string.IsNullOrWhiteSpace(request.RefreshToken))
             {
-                throw new BadRequestException("The refresh token is required.");
+                throw new BadRequestException(ResponseMessages.RefreshTokenRequired);
             }
 
             var storedToken = await _repository.GetRefreshTokenByHashAsync(HashToken(request.RefreshToken));

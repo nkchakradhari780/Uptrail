@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Folder Include="Common\Enums\" />
+    <Folder Include="Models\Dtos\RoleDtos\" />
   </ItemGroup>
 
 </Project>
